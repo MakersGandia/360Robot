@@ -350,6 +350,20 @@ String urlDecode(String input) {
 
 void setup() {
   m5.begin();
+
+  ledcSetup(canal_0, frec, timer);
+  ledcAttachPin(LED_PIN5, canal_0);
+
+  ledcSetup(canal_1, frec, timer);
+  ledcAttachPin(LED_PIN2, canal_1);
+
+  ledcSetup(canal_2, frec, timer);
+  ledcAttachPin(LED_PIN21, canal_2);
+
+  ledcSetup(canal_3, frec, timer);
+  ledcAttachPin(LED_PIN22, canal_3);
+
+  
   preferences.begin("wifi-config");
 
   delay(10);
