@@ -1,5 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* p
+=======
+/* prueba
+>>>>>>> parent of 9a2ede9... .
 =======
 /* prueba
 >>>>>>> parent of 9a2ede9... .
