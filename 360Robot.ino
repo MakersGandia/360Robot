@@ -1,4 +1,4 @@
-/* p
+/* 
  * Developed by Makers Gandía in colaboration with Immersive Interactive Lab.
  * Authors: Alejandro Marco Ibáñez, María Balagué, Leonardo Rodríguez, Alejandro Castilla García, Jair López Gutiérrez
 */
