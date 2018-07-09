@@ -1,17 +1,11 @@
 <<<<<<< HEAD
-<<<<<<< HEAD
 /* 
 =======
 <<<<<<< HEAD
-=======
->>>>>>> parent of 2b9437b... .
 /* p
 =======
 /* prueba
 >>>>>>> parent of 9a2ede9... .
-<<<<<<< HEAD
->>>>>>> parent of 2b9437b... .
-=======
 >>>>>>> parent of 2b9437b... .
  * Developed by Makers Gandía in colaboration with Immersive Interactive Lab.
  * Authors: Alejandro Marco Ibáñez, María Balagué, Leonardo Rodríguez, Alejandro Castilla García, Jair López Gutiérrez
