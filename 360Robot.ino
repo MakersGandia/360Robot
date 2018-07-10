@@ -1,16 +1,3 @@
-/* 
- * Developed by Makers Gandía in colaboration with Immersive Interactive Lab.
- * Authors: Alejandro Marco Ibáñez, María Balagué, Leonardo Rodríguez, Alejandro Castilla García, Jair López Gutiérrez
-*/
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////VARIABLES/////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////INCLUDE
-
 #include <M5Stack.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
@@ -18,10 +5,8 @@
 #include "WebServer.h"
 #include <Preferences.h>
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END INCLUDE
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////DEFINE MOTOR
-
+//////////////////////////////////////////////////////////////////////////
 // use first channel of 16 channels (started from zero)
 #define canal_0     0
 
@@ -37,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 
-// use second channel of 16 channels (started from zero)
+// use first channel of 16 channels (started from zero)
 #define canal_1     1
 
 // use 13 bit precission for LEDC timer
@@ -52,8 +37,39 @@
 //////////////////////////////////////////////////////////////////////////
 
 
-// use third channel of 16 channels (started from zero)
+// use first channel of 16 channels (started from zero)
 #define canal_2     2
+
+// use 13 bit precission for LEDC timer
+#define timer  13
+
+// use 5000 Hz as a LEDC base frequency
+#define frec     5000
+
+// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
+#define LED_PIN16            16
+
+
+
+//////////////////////////////////////////////////////////////////////////
+
+
+// use first channel of 16 channels (started from zero)
+#define canal_3     3
+
+// use 13 bit precission for LEDC timer
+#define timer  13
+
+// use 5000 Hz as a LEDC base frequency
+#define frec     5000
+
+// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
+#define LED_PIN17            17
+
+
+
+// use first channel of 16 channels (started from zero)
+#define canal_4     4
 
 // use 13 bit precission for LEDC timer
 #define timer  13
@@ -64,12 +80,11 @@
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
 #define LED_PIN21            21
 
-
 //////////////////////////////////////////////////////////////////////////
 
 
-// use fourth channel of 16 channels (started from zero)
-#define canal_3     3
+// use first channel of 16 channels (started from zero)
+#define canal_5     5
 
 // use 13 bit precission for LEDC timer
 #define timer  13
@@ -80,16 +95,60 @@
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
 #define LED_PIN22            22
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END DEFINE MOTOR
+//////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////MOTOR VARIABLES
 
-int leftVel = 0;
-int rightVel = 0;
+// use first channel of 16 channels (started from zero)
+#define canal_6     6
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END MOTOR VARIABLES 
+// use 13 bit precission for LEDC timer
+#define timer  13
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////WIFI VARIABLES 
+// use 5000 Hz as a LEDC base frequency
+#define frec     5000
+
+// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
+#define LED_PIN19            19
+
+
+
+//////////////////////////////////////////////////////////////////////////
+
+
+// use first channel of 16 channels (started from zero)
+#define canal_7     7
+
+// use 13 bit precission for LEDC timer
+#define timer  13
+
+// use 5000 Hz as a LEDC base frequency
+#define frec     5000
+
+// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
+#define LED_PIN23            23
+
+
+
+//////////////////////////////////////////////////////////////////////////
+
+int velIzq = 0;
+int velDer = 0;
+
+//////////////////////////////////////////////////////////////////////////
+
+// Arduino like analogWrite
+// value has to be between 0 and valueMax
+void acelera(uint8_t channel, uint32_t value, uint32_t valueMax = 255) {
+  // calculate duty, 8191 from 2 ^ 13 - 1
+  uint32_t duty = (8191 / valueMax) * value;
+  //uint32_t duty = (8191 / valueMax) * min(value, valueMax);
+
+  // write duty to LEDC
+  ledcWrite(channel, duty);
+}
+
+
+
 
 const IPAddress apIP(192, 168, 4, 1);
 const char* apSSID = "M5STACK_SETUP";
@@ -104,36 +163,52 @@ WebServer webServer(80);
 // wifi config store
 Preferences preferences;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END WIFI VARIABLES 
+void setup() {
+  m5.begin();
 
+  // put your setup code here, to run once:
+  // Setup timer and attach timer to a led pin
+  ledcSetup(canal_0, frec, timer);
+  ledcAttachPin(LED_PIN5, canal_0);
 
+  ledcSetup(canal_1, frec, timer);
+  ledcAttachPin(LED_PIN2, canal_1);
 
+  ledcSetup(canal_2, frec, timer);
+  ledcAttachPin(LED_PIN21, canal_2);
 
+  ledcSetup(canal_3, frec, timer);
+  ledcAttachPin(LED_PIN22, canal_3);
+  preferences.begin("wifi-config");
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////METHODS///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////ACCELERATE
-// Arduino like analogWrite
-// value has to be between 0 and valueMax
-void accelerate(uint8_t channel, uint32_t value, uint32_t valueMax = 255) {
-  // calculate duty, 8191 from 2 ^ 13 - 1
-  uint32_t duty = (8191 / valueMax) * value;
-  //uint32_t duty = (8191 / valueMax) * min(value, valueMax);
-
-  // write duty to LEDC
-  ledcWrite(channel, duty);
+  delay(10);
+  if (restoreConfig()) {
+    if (checkConnection()) {
+      settingMode = false;
+      startWebServer();
+      return;
+    }
+  }
+  settingMode = true;
+  setupMode();
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END ACCELERATE
+void loop() {
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////RESTORECONFIG
+  acelera(canal_0, velIzq);
+  acelera(canal_1, velIzq);
+  
+  if (settingMode) {
+  }
+  webServer.handleClient();
+
+
+  acelera(canal_0, velIzq);
+  acelera(canal_1, velIzq);
+  //acelera(canal_2, velDer);
+ // acelera(canal_3, velDer);
+
+}
 
 boolean restoreConfig() {
   wifi_ssid = preferences.getString("WIFI_SSID");
@@ -154,11 +229,6 @@ boolean restoreConfig() {
     return false;
   }
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END RESTORECONFIG
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////CHECKCONNECTION
 
 boolean checkConnection() {
   int count = 0;
@@ -182,10 +252,6 @@ boolean checkConnection() {
   return false;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END CHECKCONNECTION
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////STARTWEBSERVER
-
 void startWebServer() {
   if (settingMode) {
     Serial.print("Starting Web Server at ");
@@ -199,6 +265,57 @@ void startWebServer() {
       s += "</select><br>Password: <input name=\"pass\" length=64 type=\"password\"><input type=\"submit\"></form>";
       webServer.send(200, "text/html", makePage("Wi-Fi Settings", s));
     });
+
+
+
+    // FUNCIONA BIEN LIMPIAR EL CODIGO
+    // IR HACIA DELANTE       VELOCIDAD DE 0 A 255
+    webServer.on("/acelerar", []() {
+      Serial.print("hacia delante");
+      velIzq = 255;
+      velDer = 255;
+    });
+
+
+    //
+    // FUNCIONA BIEN LIMPIAR EL CODIGO
+    // IR HACIA DELANTE
+    webServer.on("/stop", []() {
+      velIzq = 0;
+      velDer = 0;
+    });
+
+
+
+
+
+    //
+    // FUNCIONA BIEN LIMPIAR EL CODIGO
+    // GIRAR IZQUIERDA
+    webServer.on("/izquierda", []() {
+      velIzq = 0;
+      velDer = 255;
+    });
+
+
+
+    //
+    // FUNCIONA BIEN LIMPIAR EL CODIGO
+    // GIRAR DERECHA
+    webServer.on("/derecha", []() {
+      velIzq = 255;
+      velDer = 0;
+    });
+
+
+
+
+
+
+
+
+
+
     webServer.on("/setap", []() {
       String ssid = urlDecode(webServer.arg("ssid"));
       Serial.print("SSID: ");
@@ -255,10 +372,6 @@ void startWebServer() {
   webServer.begin();
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END STARTWEBSERVER
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////SETUPMODE
-
 void setupMode() {
   WiFi.mode(WIFI_MODE_STA);
   WiFi.disconnect();
@@ -290,10 +403,6 @@ void setupMode() {
   M5.Lcd.println("\"");
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END SETUPMODE
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////MAKEPAGE
-
 String makePage(String title, String contents) {
   String s = "<!DOCTYPE html><html><head>";
   s += "<meta name=\"viewport\" content=\"width=device-width,user-scalable=0\">";
@@ -304,10 +413,6 @@ String makePage(String title, String contents) {
   s += "</body></html>";
   return s;
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END MAKEPAGE
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////URLDECODE
 
 String urlDecode(String input) {
   String s = input;
@@ -343,55 +448,3 @@ String urlDecode(String input) {
   s.replace("%60", "`");
   return s;
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END URLDECODE
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////SETUP
-
-void setup() {
-  m5.begin();
-
-  ledcSetup(canal_0, frec, timer);
-  ledcAttachPin(LED_PIN5, canal_0);
-
-  ledcSetup(canal_1, frec, timer);
-  ledcAttachPin(LED_PIN2, canal_1);
-
-  ledcSetup(canal_2, frec, timer);
-  ledcAttachPin(LED_PIN21, canal_2);
-
-  ledcSetup(canal_3, frec, timer);
-  ledcAttachPin(LED_PIN22, canal_3);
-
-  
-  preferences.begin("wifi-config");
-
-  delay(10);
-  if (restoreConfig()) {
-    if (checkConnection()) {
-      settingMode = false;
-      startWebServer();
-      return;
-    }
-  }
-  settingMode = true;
-  setupMode();
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END SETUP
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////LOOP
-
-void loop() {
-  if (settingMode) {
-  }
-  webServer.handleClient();
-  accelerate(canal_0, leftVel);
-  accelerate(canal_1, leftVel);
-  accelerate(canal_2, rightVel);
-  accelerate(canal_3, rightVel);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END LOOP
-
-
