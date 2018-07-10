@@ -133,6 +133,7 @@
 
 int velIzq = 0;
 int velDer = 0;
+int velback = 0;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -179,6 +180,20 @@ void setup() {
 
   ledcSetup(canal_3, frec, timer);
   ledcAttachPin(LED_PIN22, canal_3);
+
+  ledcSetup(canal_4, frec, timer);
+  ledcAttachPin(LED_PIN21, canal_4);
+
+  ledcSetup(canal_5, frec, timer);
+  ledcAttachPin(LED_PIN22, canal_5);
+
+  ledcSetup(canal_6, frec, timer);
+  ledcAttachPin(LED_PIN19, canal_6);
+
+  ledcSetup(canal_7, frec, timer);
+  ledcAttachPin(LED_PIN23, canal_7);
+
+
   preferences.begin("wifi-config");
 
   delay(10);
@@ -195,9 +210,8 @@ void setup() {
 
 void loop() {
 
-  acelera(canal_0, velIzq);
-  acelera(canal_1, velIzq);
-  
+
+
   if (settingMode) {
   }
   webServer.handleClient();
@@ -205,8 +219,12 @@ void loop() {
 
   acelera(canal_0, velIzq);
   acelera(canal_1, velIzq);
-  //acelera(canal_2, velDer);
- // acelera(canal_3, velDer);
+  acelera(canal_2, velDer);
+  acelera(canal_3, velDer);
+  acelera(canal_4, velback);
+  acelera(canal_5, velback);
+  acelera(canal_6, velback);
+  acelera(canal_7, velback);
 
 }
 
@@ -274,6 +292,7 @@ void startWebServer() {
       Serial.print("hacia delante");
       velIzq = 255;
       velDer = 255;
+      velback = 0;
     });
 
 
@@ -283,6 +302,7 @@ void startWebServer() {
     webServer.on("/stop", []() {
       velIzq = 0;
       velDer = 0;
+      velback = 0;
     });
 
 
@@ -295,6 +315,7 @@ void startWebServer() {
     webServer.on("/izquierda", []() {
       velIzq = 0;
       velDer = 255;
+      velback = 0;
     });
 
 
@@ -305,9 +326,14 @@ void startWebServer() {
     webServer.on("/derecha", []() {
       velIzq = 255;
       velDer = 0;
+      velback = 0;
     });
 
-
+    webServer.on("/atras", []() {
+      velIzq = 0;
+      velDer = 0;
+      velback = 255;
+    });
 
 
 
