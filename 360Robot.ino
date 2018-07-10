@@ -176,10 +176,10 @@ void setup() {
   ledcAttachPin(LED_PIN2, canal_1);
 
   ledcSetup(canal_2, frec, timer);
-  ledcAttachPin(LED_PIN21, canal_2);
+  ledcAttachPin(LED_PIN16, canal_2);
 
   ledcSetup(canal_3, frec, timer);
-  ledcAttachPin(LED_PIN22, canal_3);
+  ledcAttachPin(LED_PIN17, canal_3);
 
   ledcSetup(canal_4, frec, timer);
   ledcAttachPin(LED_PIN21, canal_4);
@@ -216,14 +216,17 @@ void loop() {
   }
   webServer.handleClient();
 
-
+  //m1
   acelera(canal_0, velIzq);
-  acelera(canal_1, velIzq);
-  acelera(canal_2, velDer);
-  acelera(canal_3, velDer);
-  acelera(canal_4, velback);
+  acelera(canal_1, velback);
+  //m2
+  acelera(canal_2, velIzq);
+  acelera(canal_3, velback);
+  //m3
+  acelera(canal_4, velDer);
   acelera(canal_5, velback);
-  acelera(canal_6, velback);
+  //m4
+  acelera(canal_6, velDer);
   acelera(canal_7, velback);
 
 }
