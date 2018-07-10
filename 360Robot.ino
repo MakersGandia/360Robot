@@ -210,7 +210,7 @@ void setup() {
 
 void loop() {
 
-
+ M5.Speaker.setVolume(0);
 
   if (settingMode) {
   }
