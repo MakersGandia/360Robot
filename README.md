@@ -1,8 +1,8 @@
 # 360Robot
-# What is this?
+# Why 360Robot?
 This project was born from the need to remotely control the movement of a camera for making 360º videos . With the aim of obtaining a recording at eye level without the need of human resources. It consists in the design and construction of a motorized mobile support remotely controlled by wireless connection. This type of recording technology is becoming really popular and we wanted to be part of this movement.
 
-# How we make it?
+# How did we make it?
 Our first idea was to make it using Arduino Genuino Uno with ESP32 chip, however we wanted to make it different. So instead of that we decided to use M5STACK which is an open source enclosed modular toolkit with ESP32:
 
 http://m5stack.com/.
