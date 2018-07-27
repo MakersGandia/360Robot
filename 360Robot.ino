@@ -1,6 +1,6 @@
 /* 
  * Developed by Makers Gandía in colaboration with Immersive Interactive Lab.
- * Authors: Alejandro Marco Ibáñez, María Balagué, Leonardo Rodríguez, Alejandro Castilla García, Jair López Gutiérrez
+ * Authors: Alejandro Marco Ibáñez, Maria Balagué, Leonardo Rodríguez, Alejandro Castilla García, Jair López Gutiérrez
 */
 
 
@@ -10,6 +10,8 @@
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////INCLUDE
+
+
 
 #include <M5Stack.h>
 #include <WiFi.h>
@@ -22,6 +24,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////DEFINE MOTOR
 
+//////////////////////////////////////////////////////////////////////////M1
 // use first channel of 16 channels (started from zero)
 #define canal_0     0
 
@@ -34,7 +37,7 @@
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
 #define LED_PIN5            5
 
-//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////M1 BACK
 
 
 // use second channel of 16 channels (started from zero)
@@ -49,7 +52,7 @@
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
 #define LED_PIN2            2
 
-//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////M2
 
 
 // use third channel of 16 channels (started from zero)
@@ -62,10 +65,11 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN21            21
+#define LED_PIN16            16
 
 
-//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////M2 BACK
 
 
 // use fourth channel of 16 channels (started from zero)
@@ -78,7 +82,69 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
+#define LED_PIN17            17
+
+//////////////////////////////////////////////////////////////////////////M3
+
+// use fifth channel of 16 channels (started from zero)
+#define canal_4     4
+
+// use 13 bit precission for LEDC timer
+#define timer  13
+
+// use 5000 Hz as a LEDC base frequency
+#define frec     5000
+
+// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
+#define LED_PIN21            21
+
+//////////////////////////////////////////////////////////////////////////M3 BACK
+
+
+// use sixth channel of 16 channels (started from zero)
+#define canal_5     5
+
+// use 13 bit precission for LEDC timer
+#define timer  13
+
+// use 5000 Hz as a LEDC base frequency
+#define frec     5000
+
+// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
 #define LED_PIN22            22
+
+//////////////////////////////////////////////////////////////////////////M4
+
+
+// use seventh channel of 16 channels (started from zero)
+#define canal_6     6
+
+// use 13 bit precission for LEDC timer
+#define timer  13
+
+// use 5000 Hz as a LEDC base frequency
+#define frec     5000
+
+// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
+#define LED_PIN19            19
+
+
+
+//////////////////////////////////////////////////////////////////////////M4 BACK
+
+
+// use eight channel of 16 channels (started from zero)
+#define canal_7     7
+
+// use 13 bit precission for LEDC timer
+#define timer  13
+
+// use 5000 Hz as a LEDC base frequency
+#define frec     5000
+
+// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
+#define LED_PIN23            23
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END DEFINE MOTOR
 
@@ -86,10 +152,13 @@
 
 int leftVel = 0;
 int rightVel = 0;
+int backVel = 0;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END MOTOR VARIABLES 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////WIFI VARIABLES 
+
+
 
 const IPAddress apIP(192, 168, 4, 1);
 const char* apSSID = "M5STACK_SETUP";
@@ -120,8 +189,7 @@ Preferences preferences;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////ACCELERATE
-// Arduino like analogWrite
-// value has to be between 0 and valueMax
+
 void accelerate(uint8_t channel, uint32_t value, uint32_t valueMax = 255) {
   // calculate duty, 8191 from 2 ^ 13 - 1
   uint32_t duty = (8191 / valueMax) * value;
@@ -159,6 +227,7 @@ boolean restoreConfig() {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////CHECKCONNECTION
+
 
 boolean checkConnection() {
   int count = 0;
@@ -199,6 +268,59 @@ void startWebServer() {
       s += "</select><br>Password: <input name=\"pass\" length=64 type=\"password\"><input type=\"submit\"></form>";
       webServer.send(200, "text/html", makePage("Wi-Fi Settings", s));
     });
+
+
+
+    // GO FORWARD
+    webServer.on("/forward", []() {
+      leftVel = 255;
+      rightVel = 255;
+      backVel = 0;
+    });
+
+
+    // STOP
+    webServer.on("/stop", []() {
+      leftVel = 0;
+      rightVel = 0;
+      backVel = 0;
+    });
+
+
+
+
+
+    //TURN LEFT
+    webServer.on("/left", []() {
+      leftVel = 0;
+      rightVel = 255;
+      backVel = 0;
+    });
+
+
+
+    //TURN RIGHT
+    webServer.on("/right", []() {
+      leftVel = 255;
+      rightVel = 0;
+      backVel = 0;
+    });
+
+    
+    //GO BACKWARD
+    webServer.on("/backward", []() {
+      leftVel = 0;
+      rightVel = 0;
+      backVel = 255;
+    });
+
+
+
+
+
+
+
+
     webServer.on("/setap", []() {
       String ssid = urlDecode(webServer.arg("ssid"));
       Serial.print("SSID: ");
@@ -259,35 +381,48 @@ void startWebServer() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////SETUPMODE
 
-void setupMode() {
-  WiFi.mode(WIFI_MODE_STA);
-  WiFi.disconnect();
-  delay(100);
-  int n = WiFi.scanNetworks();
-  delay(100);
-  Serial.println("");
-  M5.Lcd.println("");
-  for (int i = 0; i < n; ++i) {
-    ssidList += "<option value=\"";
-    ssidList += WiFi.SSID(i);
-    ssidList += "\">";
-    ssidList += WiFi.SSID(i);
-    ssidList += "</option>";
+void setup() {
+  m5.begin();
+
+  // put your setup code here, to run once:
+  // Setup timer and attach timer to a led pin
+  ledcSetup(canal_0, frec, timer);
+  ledcAttachPin(LED_PIN5, canal_0);
+
+  ledcSetup(canal_1, frec, timer);
+  ledcAttachPin(LED_PIN2, canal_1);
+
+  ledcSetup(canal_2, frec, timer);
+  ledcAttachPin(LED_PIN16, canal_2);
+
+  ledcSetup(canal_3, frec, timer);
+  ledcAttachPin(LED_PIN17, canal_3);
+
+  ledcSetup(canal_4, frec, timer);
+  ledcAttachPin(LED_PIN21, canal_4);
+
+  ledcSetup(canal_5, frec, timer);
+  ledcAttachPin(LED_PIN22, canal_5);
+
+  ledcSetup(canal_6, frec, timer);
+  ledcAttachPin(LED_PIN19, canal_6);
+
+  ledcSetup(canal_7, frec, timer);
+  ledcAttachPin(LED_PIN23, canal_7);
+
+
+  preferences.begin("wifi-config");
+
+  delay(10);
+  if (restoreConfig()) {
+    if (checkConnection()) {
+      settingMode = false;
+      startWebServer();
+      return;
+    }
   }
-  delay(100);
-  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-  WiFi.softAP(apSSID);
-  WiFi.mode(WIFI_MODE_AP);
-  // WiFi.softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet);
-  // WiFi.softAP(const char* ssid, const char* passphrase = NULL, int channel = 1, int ssid_hidden = 0);
-  // dnsServer.start(53, "*", apIP);
-  startWebServer();
-  Serial.print("Starting Access Point at \"");
-  M5.Lcd.print("Starting Access Point at \"");
-  Serial.print(apSSID);
-  M5.Lcd.print(apSSID);
-  Serial.println("\"");
-  M5.Lcd.println("\"");
+  settingMode = true;
+  setupMode();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END SETUPMODE
@@ -346,52 +481,64 @@ String urlDecode(String input) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END URLDECODE
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////SETUP
-
-void setup() {
-  m5.begin();
-
-  ledcSetup(canal_0, frec, timer);
-  ledcAttachPin(LED_PIN5, canal_0);
-
-  ledcSetup(canal_1, frec, timer);
-  ledcAttachPin(LED_PIN2, canal_1);
-
-  ledcSetup(canal_2, frec, timer);
-  ledcAttachPin(LED_PIN21, canal_2);
-
-  ledcSetup(canal_3, frec, timer);
-  ledcAttachPin(LED_PIN22, canal_3);
-
-  
-  preferences.begin("wifi-config");
-
-  delay(10);
-  if (restoreConfig()) {
-    if (checkConnection()) {
-      settingMode = false;
-      startWebServer();
-      return;
-    }
-  }
-  settingMode = true;
-  setupMode();
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END SETUP
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////LOOP
 
 void loop() {
+
+ M5.Speaker.setVolume(0);
+
   if (settingMode) {
   }
   webServer.handleClient();
+
+  //m1
   accelerate(canal_0, leftVel);
-  accelerate(canal_1, leftVel);
-  accelerate(canal_2, rightVel);
-  accelerate(canal_3, rightVel);
+  accelerate(canal_1, backVel);
+  //m2
+  accelerate(canal_2, leftVel);
+  accelerate(canal_3, backVel);
+  //m3
+  accelerate(canal_4, rightVel);
+  accelerate(canal_5, backVel);
+  //m4
+  accelerate(canal_6, rightVel);
+  accelerate(canal_7, backVel);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END LOOP
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////SETUP
+
+void setupMode() {
+  WiFi.mode(WIFI_MODE_STA);
+  WiFi.disconnect();
+  delay(100);
+  int n = WiFi.scanNetworks();
+  delay(100);
+  Serial.println("");
+  M5.Lcd.println("");
+  for (int i = 0; i < n; ++i) {
+    ssidList += "<option value=\"";
+    ssidList += WiFi.SSID(i);
+    ssidList += "\">";
+    ssidList += WiFi.SSID(i);
+    ssidList += "</option>";
+  }
+  delay(100);
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+  WiFi.softAP(apSSID);
+  WiFi.mode(WIFI_MODE_AP);
+  // WiFi.softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet);
+  // WiFi.softAP(const char* ssid, const char* passphrase = NULL, int channel = 1, int ssid_hidden = 0);
+  // dnsServer.start(53, "*", apIP);
+  startWebServer();
+  Serial.print("Starting Access Point at \"");
+  M5.Lcd.print("Starting Access Point at \"");
+  Serial.print(apSSID);
+  M5.Lcd.print(apSSID);
+  Serial.println("\"");
+  M5.Lcd.println("\"");
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END SETUP
 
