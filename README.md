@@ -17,7 +17,7 @@ https://es.aliexpress.com/item/T900-4WD-Metal-Wall-E-Tank-Track-Caterpillar-Chas
 
 
 # Design Diagram
-![360robot diagram](https://user-images.githubusercontent.com/39131436/42586338-2a6f0050-8538-11e8-883f-0be591624f74.png)
+![360robot 5](https://user-images.githubusercontent.com/39131436/43365095-703768d2-9327-11e8-9774-b6498c216950.png)
 
 
 # Pinout Schematic
