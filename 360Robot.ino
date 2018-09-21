@@ -422,6 +422,15 @@ void startWebServer() {
 
 void setup() {
   m5.begin();
+  M1forward = 0;
+  M2forward = 0;
+  M3forward = 0;
+  M4forward = 0;
+
+M1backward = 255;
+M2backward = 255;
+M3backward = 255;
+M4backward = 255;
 
   // put your setup code here, to run once:
   // Setup timer and attach timer to a led pin
@@ -523,6 +532,9 @@ String urlDecode(String input) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////LOOP
 
 void loop() {
+
+
+
 
   M5.Speaker.setVolume(0);
 
