@@ -1,6 +1,6 @@
-/* 
- * Developed by Makers Gandía in colaboration with Immersive Interactive Lab.
- * Authors: Alejandro Marco Ibáñez, Maria Balagué, Leonardo Rodríguez, Alejandro Castilla García, Jair López Gutiérrez
+/*
+   Developed by Makers Gandía in colaboration with Immersive Interactive Lab.
+   Authors: Alejandro Marco Ibáñez, Maria Balagué, Leonardo Rodríguez, Alejandro Castilla García, Jair López Gutiérrez
 */
 
 
@@ -35,7 +35,7 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN5            5
+#define LED_PIN21            21
 
 //////////////////////////////////////////////////////////////////////////M1 BACK
 
@@ -50,7 +50,7 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN2            2
+#define LED_PIN22            22
 
 //////////////////////////////////////////////////////////////////////////M2
 
@@ -65,7 +65,7 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN16            16
+#define LED_PIN23            23
 
 
 
@@ -82,7 +82,7 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN17            17
+#define LED_PIN19            19
 
 //////////////////////////////////////////////////////////////////////////M3
 
@@ -96,7 +96,7 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN21            21
+#define LED_PIN5            5
 
 //////////////////////////////////////////////////////////////////////////M3 BACK
 
@@ -111,7 +111,7 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN22            22
+#define LED_PIN2            2
 
 //////////////////////////////////////////////////////////////////////////M4
 
@@ -126,7 +126,7 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN19            19
+#define LED_PIN17            17
 
 
 
@@ -143,20 +143,29 @@
 #define frec     5000
 
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN23            23
+#define LED_PIN16            16
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END DEFINE MOTOR
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////MOTOR VARIABLES
 
-int leftVel = 0;
-int rightVel = 0;
-int backVel = 0;
+int M1forward = 0;
+int M1backward = 0;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END MOTOR VARIABLES 
+int M2forward = 0;
+int M2backward = 0;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////WIFI VARIABLES 
+int M3forward = 0;
+int M3backward = 0;
+
+int M4forward = 0;
+int M4backward = 0;
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END MOTOR VARIABLES
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////WIFI VARIABLES
 
 
 
@@ -173,7 +182,7 @@ WebServer webServer(80);
 // wifi config store
 Preferences preferences;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END WIFI VARIABLES 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////END WIFI VARIABLES
 
 
 
@@ -273,17 +282,29 @@ void startWebServer() {
 
     // GO FORWARD
     webServer.on("/forward", []() {
-      leftVel = 255;
-      rightVel = 255;
-      backVel = 0;
+      int M1forward = 255;
+      int M2forward = 255;
+      int M3forward = 255;
+      int M4forward = 255;
+
+      int M1backward = 0;
+      int M2backward = 0;
+      int M3backward = 0;
+      int M4backward = 0;
     });
 
 
     // STOP
     webServer.on("/stop", []() {
-      leftVel = 0;
-      rightVel = 0;
-      backVel = 0;
+      int M1forward = 0;
+      int M2forward = 0;
+      int M3forward = 0;
+      int M4forward = 0;
+
+      int M1backward = 0;
+      int M2backward = 0;
+      int M3backward = 0;
+      int M4backward = 0;
     });
 
 
@@ -292,26 +313,44 @@ void startWebServer() {
 
     //TURN LEFT
     webServer.on("/left", []() {
-      leftVel = 0;
-      rightVel = 255;
-      backVel = 0;
+      int M1backward = 50;
+      int M2backward = 50;
+      int M3forward = 255;
+      int M4forward = 255;
+
+      int M1forward = 0;
+      int M2forward = 0;
+      int M3backward = 0;
+      int M4backward = 0;
     });
 
 
 
     //TURN RIGHT
     webServer.on("/right", []() {
-      leftVel = 255;
-      rightVel = 0;
-      backVel = 0;
+      int M1forward = 255;
+      int M2forward = 255;
+      int M3backward = 50;
+      int M4backward = 50;
+
+      int M1backward = 0;
+      int M2backward = 0;
+      int M3forward = 0;
+      int M4forward = 0;
     });
 
-    
+
     //GO BACKWARD
     webServer.on("/backward", []() {
-      leftVel = 0;
-      rightVel = 0;
-      backVel = 255;
+      int M1forward = 0;
+      int M2forward = 0;
+      int M3forward = 0;
+      int M4forward = 0;
+
+      int M1backward = 255;
+      int M2backward = 255;
+      int M3backward = 255;
+      int M4backward = 255;
     });
 
 
@@ -383,32 +422,41 @@ void startWebServer() {
 
 void setup() {
   m5.begin();
+  M1forward = 0;
+  M2forward = 0;
+  M3forward = 0;
+  M4forward = 0;
+
+M1backward = 255;
+M2backward = 255;
+M3backward = 255;
+M4backward = 255;
 
   // put your setup code here, to run once:
   // Setup timer and attach timer to a led pin
   ledcSetup(canal_0, frec, timer);
-  ledcAttachPin(LED_PIN5, canal_0);
+  ledcAttachPin(LED_PIN21, canal_0);
 
   ledcSetup(canal_1, frec, timer);
-  ledcAttachPin(LED_PIN2, canal_1);
+  ledcAttachPin(LED_PIN22, canal_1);
 
   ledcSetup(canal_2, frec, timer);
-  ledcAttachPin(LED_PIN16, canal_2);
+  ledcAttachPin(LED_PIN23, canal_2);
 
   ledcSetup(canal_3, frec, timer);
-  ledcAttachPin(LED_PIN17, canal_3);
+  ledcAttachPin(LED_PIN19, canal_3);
 
   ledcSetup(canal_4, frec, timer);
-  ledcAttachPin(LED_PIN21, canal_4);
+  ledcAttachPin(LED_PIN5, canal_4);
 
   ledcSetup(canal_5, frec, timer);
-  ledcAttachPin(LED_PIN22, canal_5);
+  ledcAttachPin(LED_PIN2, canal_5);
 
   ledcSetup(canal_6, frec, timer);
-  ledcAttachPin(LED_PIN19, canal_6);
+  ledcAttachPin(LED_PIN17, canal_6);
 
   ledcSetup(canal_7, frec, timer);
-  ledcAttachPin(LED_PIN23, canal_7);
+  ledcAttachPin(LED_PIN16, canal_7);
 
 
   preferences.begin("wifi-config");
@@ -485,24 +533,27 @@ String urlDecode(String input) {
 
 void loop() {
 
- M5.Speaker.setVolume(0);
+
+
+
+  M5.Speaker.setVolume(0);
 
   if (settingMode) {
   }
   webServer.handleClient();
 
   //m1
-  accelerate(canal_0, leftVel);
-  accelerate(canal_1, backVel);
+  accelerate(canal_0, M1forward);
+  accelerate(canal_1, M1backward);
   //m2
-  accelerate(canal_2, leftVel);
-  accelerate(canal_3, backVel);
+  accelerate(canal_2, M2forward);
+  accelerate(canal_3, M2backward);
   //m3
-  accelerate(canal_4, rightVel);
-  accelerate(canal_5, backVel);
+  accelerate(canal_4, M3forward);
+  accelerate(canal_5, M3backward);
   //m4
-  accelerate(canal_6, rightVel);
-  accelerate(canal_7, backVel);
+  accelerate(canal_6, M4forward);
+  accelerate(canal_7, M4backward);
 
 }
 
